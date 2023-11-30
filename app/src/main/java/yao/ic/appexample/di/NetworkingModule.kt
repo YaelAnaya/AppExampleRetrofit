@@ -8,9 +8,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import yao.ic.appexample.data.repository.TVMazeRepository
+import yao.ic.appexample.network.TVMazeApiService
 import yao.ic.appexample.network.BASE_URL
-import yao.ic.appexample.network.AmphibiansApiService
-import yao.ic.appexample.data.repository.AmphibiansRepository
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -22,19 +22,22 @@ object NetworkingModule {
             .add(KotlinJsonAdapterFactory())
             .build()
         return Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(
+                MoshiConverterFactory
+                    .create(moshi)
+            )
             .baseUrl(BASE_URL)
             .build()
     }
 
     @Provides
-    fun providesAmphibiansApiService(retrofit: Retrofit): AmphibiansApiService {
-        return retrofit.create(AmphibiansApiService::class.java)
+    fun providesTvMazeApiService(retrofit: Retrofit): TVMazeApiService {
+        return retrofit.create(TVMazeApiService::class.java)
     }
 
     @Provides
-    fun providesAmphibiansRepository(api: AmphibiansApiService): AmphibiansRepository {
-        return AmphibiansRepository(api)
+    fun providesTvMazeRepository(api: TVMazeApiService): TVMazeRepository {
+        return TVMazeRepository(api)
     }
 
 }

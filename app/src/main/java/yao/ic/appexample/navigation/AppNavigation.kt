@@ -1,61 +1,93 @@
 package yao.ic.appexample.navigation
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import yao.ic.appexample.data.repository.AmphibianState
+import yao.ic.appexample.data.repository.ShowState
 import yao.ic.appexample.network.NetworkState
 import yao.ic.appexample.ui.ErrorScreen
 import yao.ic.appexample.ui.LoadingScreen
-import yao.ic.appexample.ui.screens.amphibian_detail.AmphibianDetailScreen
-import yao.ic.appexample.ui.screens.amphibians.AmphibiansScreen
+import yao.ic.appexample.ui.screens.amphibians.ShowListScreen
 
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    startDestination: String = NavItem.Amphibians.route,
+    startDestination: String = NavItem.Shows.route,
     networkState: NetworkState,
     retryAction: () -> Unit,
+    searchAction: (String) -> Unit,
+    onDetail: (Int) -> Unit = {},
 ){
-
     NavHost(
         modifier = modifier,
         navController = navController,
         startDestination = startDestination
     ){
-        composable(NavItem.Amphibians){
-            when (networkState) {
-                is NetworkState.Loading -> LoadingScreen(
-                    modifier = modifier,
-                    onRetry = retryAction
-                )
-                is NetworkState.Success -> AmphibiansScreen(
-                    modifier = modifier,
-                    amphibianState = networkState.amphibianState,
-                )
-                is NetworkState.Error -> ErrorScreen(
-                    modifier = modifier,
-                    onRetry = retryAction
-                )
+        composable(
+            navItem = NavItem.Shows,
+            networkState = networkState,
+            onRetry = retryAction
+        ){ _, uiState ->
+            ShowListScreen(
+                modifier = modifier,
+                showState = uiState,
+                onCardClick = {
+                    navController.navigate(NavItem.ShowDetail.createRoute(it.toString()))
+                }
+            )
+        }
+
+        composable(
+            navItem = NavItem.Favorites,
+            networkState = networkState,
+            onRetry = retryAction
+        ){ _, uiState ->
+            Text(text = "Favorites")
+        }
+
+        composable(
+            navItem = NavItem.ShowDetail,
+            networkState = networkState,
+            onRetry = retryAction
+        ){ navEntry, uiState ->
+            val id = navEntry.findArg<Int>(NavArg.ShowID)
+
+            LaunchedEffect(key1 = Unit) {
+                onDetail(id)
             }
+
+            Text(text = "ShowDetail")
+            Text(text = uiState.showDetail.toString())
         }
     }
-
 }
 
-private fun NavGraphBuilder.composable(
+private inline fun NavGraphBuilder.composable(
     navItem: NavItem,
-    content: @Composable (NavBackStackEntry) -> Unit
+    networkState: NetworkState,
+    noinline onRetry: () -> Unit,
+    crossinline content: @Composable (NavBackStackEntry, ShowState) -> Unit
 ) {
-    composable(navItem.route, navItem.args) {
-        content(it)
+    when (networkState) {
+        is NetworkState.Loading -> composable(navItem.route, navItem.args){
+            LoadingScreen()
+        }
+        is NetworkState.Success -> composable(navItem.route, navItem.args){
+            content(it, networkState.showState)
+        }
+        is NetworkState.Error -> composable(navItem.route, navItem.args){
+            ErrorScreen(
+                errorMessage = networkState.message,
+                onRetry = onRetry
+            )
+        }
     }
 }
 

@@ -74,26 +74,34 @@ dependencies {
     val composeVersion = "1.4.3"
     val moshiVersion = "1.12.0"
     val retrofitVersion = "2.9.0"
+    val coilVersion = "2.2.2"
 
+    /* Navigation Compose */
     implementation("androidx.navigation:navigation-compose:$navVersion")
 
+    /* Retrofit and Moshi */
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-moshi:$retrofitVersion")
-
 
     implementation("com.squareup.moshi:moshi:$moshiVersion")
     implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
 
     /* Coil */
-    implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation("io.coil-kt:coil-compose:$coilVersion")
 
     /* Dagger - Hilt */
     implementation("com.google.dagger:hilt-android:2.44")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
-
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
-
+    
+    /* Extended compose UI components and configuration utils */
     implementation("androidx.compose.material:material-icons-extended:$composeVersion")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.20.0")
+
+    /* Room and datastore */
+    implementation("androidx.room:room-runtime:2.4.0")
+    kapt("androidx.room:room-compiler:2.4.0")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }
 
 kapt {
