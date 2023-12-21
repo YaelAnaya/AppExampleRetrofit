@@ -30,6 +30,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -106,6 +107,9 @@ dependencies {
     implementation("androidx.room:room-ktx:2.4.0")
     kapt("androidx.room:room-compiler:2.4.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    /* Immutable Collections */
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 }
 
 kapt {

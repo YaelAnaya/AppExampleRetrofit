@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddHome
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,8 +29,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -40,9 +46,15 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.take
 import yao.ic.appexample.navigation.AppNavigation
 import yao.ic.appexample.navigation.BOTTOM_NAV_ITEMS
+import yao.ic.appexample.navigation.NavArg
 import yao.ic.appexample.navigation.NavItem
+import yao.ic.appexample.navigation.findArg
 import yao.ic.appexample.ui.screens.show_list.TVMazeViewModel
 import java.util.Locale
 
@@ -51,32 +63,55 @@ import java.util.Locale
 fun TVMazeApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-
-){
-    val tvMazeViewModel: TVMazeViewModel = hiltViewModel()
+    tvMazeViewModel: TVMazeViewModel = hiltViewModel()
+) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val scrollBehavior = when( currentDestination?.route){
+    val scrollBehavior = when (currentDestination?.route) {
         NavItem.Shows.route -> TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
         else -> TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     }
+
+    val id = remember { mutableStateOf(0) }
+
+
+    LaunchedEffect(key1 = navBackStackEntry, key2 = id.value) {
+        if (currentDestination?.route == NavItem.Shows.route)
+            tvMazeViewModel.getShows()
+
+        navBackStackEntry?.let {
+            id.value = it.findArg(NavArg.ShowID) ?: 0
+        }
+    }
+
+    val isFavorite = remember { mutableStateOf<Flow<Boolean>>(MutableStateFlow(false)) }
+
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 navBackStackEntry = navController.currentBackStackEntryAsState().value,
-                onBack = { navController.popBackStack(); tvMazeViewModel.getShows() },
+                onBack = {
+                    navController.popBackStack();
+                },
                 onReload = { tvMazeViewModel.getShows() },
+                onSearch = { },
+                onFavorite = {
+                    isFavorite.value = tvMazeViewModel.toggleFavorite(it)
+                },
+                isFavorite = isFavorite.value.collectAsState(initial = false).value,
                 scrollBehavior = scrollBehavior
             )
         },
-        bottomBar = { BottomBar(
-            onClick = { navController.navigate(it.route) },
-            currentDestination = currentDestination,
-        ) },
+        bottomBar = {
+            BottomBar(
+                onClick = { navController.navigate(it.route) },
+                currentDestination = currentDestination,
+            )
+        },
         contentColor = colorScheme.onBackground,
         containerColor = colorScheme.background,
     ) { innerPadding ->
@@ -85,9 +120,9 @@ fun TVMazeApp(
             modifier = modifier.padding(innerPadding),
             navController = navController,
             networkState = tvMazeViewModel.state.collectAsState().value,
-            retryAction = { tvMazeViewModel.getShows() },
             searchAction = { tvMazeViewModel.searchShow(it) },
             onDetail = { tvMazeViewModel.getShowDetail(it) },
+            loadShows = { tvMazeViewModel.getShows() }
         )
 
     }
@@ -134,7 +169,7 @@ fun ErrorScreen(
 fun LoadingScreen(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment =  Alignment.Center
+        contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
             color = colorScheme.secondary
@@ -148,24 +183,27 @@ fun BottomBar(
     onClick: (NavItem) -> Unit = {},
     currentDestination: NavDestination? = null,
     options: List<NavItem> = BOTTOM_NAV_ITEMS,
-){
+) {
     NavigationBar(
         contentColor = colorScheme.onBackground,
-    ){
-        
-        options.forEach { item ->
+    ) {
+
+        repeat(options.size) { index ->
+            val item = options[index]
+            val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
             AddItem(
                 item = item,
-                selected = item.route == currentDestination?.route,
+                selected = selected,
                 onClick = onClick
             )
         }
     }
 }
+
 @Composable
 private fun RowScope.AddItem(
     item: NavItem,
-    selected : Boolean,
+    selected: Boolean,
     onClick: (NavItem) -> Unit
 ) {
     NavigationBarItem(
@@ -188,8 +226,15 @@ fun TopAppBar(
     navBackStackEntry: NavBackStackEntry? = null,
     onBack: () -> Unit = {},
     onReload: () -> Unit = {},
+    onSearch: () -> Unit = {},
+    onFavorite: (Int) -> Unit = {},
+    isFavorite: Boolean,
     scrollBehavior: TopAppBarScrollBehavior
-){
+) {
+
+    LaunchedEffect(key1 = isFavorite) {
+
+    }
 
     CenterAlignedTopAppBar(
         modifier = modifier,
@@ -197,7 +242,7 @@ fun TopAppBar(
         title = {
             Text(
                 text = navBackStackEntry?.getTitle() ?: " ",
-                style = MaterialTheme.typography.headlineSmall.copy(
+                style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.SemiBold
                 )
             )
@@ -209,30 +254,56 @@ fun TopAppBar(
             actionIconContentColor = colorScheme.onBackground,
         ),
         navigationIcon = {
-            if (navBackStackEntry?.destination?.route != NavItem.Shows.route) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back"
-                    )
+            when (navBackStackEntry?.destination?.route) {
+                NavItem.Shows.route -> {
+                    IconButton(onClick = onSearch) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search"
+                        )
+                    }
+
+                }
+
+                else -> {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+
                 }
             }
         },
         actions = {
-            if (navBackStackEntry?.destination?.route == NavItem.Shows.route) {
-                IconButton(onClick = onReload) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh"
-                    )
+            when (navBackStackEntry?.destination?.route) {
+                NavItem.Shows.route -> {
+                    IconButton(onClick = onReload) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh"
+                        )
+                    }
                 }
+
+                NavItem.ShowDetail.route -> {
+                    val id = navBackStackEntry.findArg<Int>(NavArg.ShowID)
+                    IconButton(onClick = { onFavorite(id) }) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorite"
+                        )
+                    }
+                }
+
+                else -> {}
             }
         },
     )
 }
 
-private fun NavBackStackEntry.getTitle() : String? {
-    // just show the title of the BOTTOM_NAV_ITEMS list
+private fun NavBackStackEntry.getTitle(): String? {
     return BOTTOM_NAV_ITEMS.find { navItem ->
         destination.hierarchy.any { destination ->
             destination.route == navItem.route

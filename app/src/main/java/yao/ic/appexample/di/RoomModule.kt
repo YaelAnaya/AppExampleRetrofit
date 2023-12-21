@@ -19,7 +19,7 @@ import javax.inject.Singleton
 object RoomModule {
     @Provides
     @Singleton
-    fun provideTVMazeDatabase(
+    fun providesTvMazeDatabase(
         @ApplicationContext
         context: Context
     ) = Room.databaseBuilder(
@@ -30,13 +30,13 @@ object RoomModule {
 
     @Provides
     @Singleton
-    fun provideFavoriteShowDao(
+    fun providesFavoriteShowDao(
         db: TVMazeDatabase
     ) = db.favoriteShowDao()
 
     @Provides
     @Singleton
-    fun provideTVMazeRepository(
+    fun providesTvMazeRepository(
         dao: FavoriteShowDao,
         api: TVMazeApiService
     ) = TVMazeRepository(api, dao)
