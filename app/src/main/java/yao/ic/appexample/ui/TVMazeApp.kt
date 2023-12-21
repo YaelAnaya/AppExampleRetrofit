@@ -43,7 +43,7 @@ import androidx.navigation.compose.rememberNavController
 import yao.ic.appexample.navigation.AppNavigation
 import yao.ic.appexample.navigation.BOTTOM_NAV_ITEMS
 import yao.ic.appexample.navigation.NavItem
-import yao.ic.appexample.ui.screens.amphibians.TVMazeViewModel
+import yao.ic.appexample.ui.screens.show_list.TVMazeViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)

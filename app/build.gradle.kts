@@ -98,8 +98,12 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:$composeVersion")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.20.0")
 
+    /* Lottie compose*/
+    implementation("com.airbnb.android:lottie-compose:5.2.0")
+
     /* Room and datastore */
     implementation("androidx.room:room-runtime:2.4.0")
+    implementation("androidx.room:room-ktx:2.4.0")
     kapt("androidx.room:room-compiler:2.4.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 }

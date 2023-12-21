@@ -1,4 +1,4 @@
-package yao.ic.appexample.ui.screens.amphibians
+package yao.ic.appexample.ui.screens.show_list
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import yao.ic.appexample.R
-import yao.ic.appexample.data.repository.ShowState
-import yao.ic.appexample.model.Show
+import yao.ic.appexample.data.state.ShowState
+import yao.ic.appexample.data.model.Show
 
 @Composable
 fun ShowListScreen(
@@ -126,18 +126,15 @@ private fun ShowCard(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 14.dp),
-                text = show.genres.ifEmpty { listOf("No genre") }.subList(0, 2).joinToString( ", "),
+                text = show.genres.ifEmpty { listOf("No genre") }.joinToString(separator = ", "),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontSize = 12.sp
                 ),
                 textAlign = TextAlign.Start,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-//            Text(
-//                text = HtmlCompat.fromHtml(show.description, HtmlCompat.FROM_HTML_MODE_COMPACT).toString(),
-//                style = MaterialTheme.typography.bodyMedium,
-//                textAlign = TextAlign.Justify,
-//                modifier = Modifier.padding(16.dp)
-//            )
+
         }
     }
 }

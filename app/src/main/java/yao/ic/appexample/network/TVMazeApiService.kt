@@ -3,8 +3,8 @@ package yao.ic.appexample.network
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
-import yao.ic.appexample.model.Show
-import yao.ic.appexample.model.ShowSearch
+import yao.ic.appexample.data.model.Show
+import yao.ic.appexample.data.model.ShowSearch
 
 interface TVMazeApiService {
     @GET(SEARCH_SHOW_ENDPOINT)

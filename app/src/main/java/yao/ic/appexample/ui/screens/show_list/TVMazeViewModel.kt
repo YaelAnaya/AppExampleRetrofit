@@ -1,4 +1,4 @@
-package yao.ic.appexample.ui.screens.amphibians
+package yao.ic.appexample.ui.screens.show_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import yao.ic.appexample.data.repository.ShowState
+import yao.ic.appexample.data.state.ShowState
 import yao.ic.appexample.data.repository.TVMazeRepository
-import yao.ic.appexample.network.NetworkState
+import yao.ic.appexample.data.state.NetworkState
 import javax.inject.Inject
 
 @HiltViewModel

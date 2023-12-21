@@ -11,16 +11,19 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import yao.ic.appexample.data.repository.TVMazeRepository
 import yao.ic.appexample.network.TVMazeApiService
 import yao.ic.appexample.network.BASE_URL
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkingModule {
 
     @Provides
+    @Singleton
     fun provideRetrofit(): Retrofit {
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
+
         return Retrofit.Builder()
             .addConverterFactory(
                 MoshiConverterFactory
@@ -31,13 +34,8 @@ object NetworkingModule {
     }
 
     @Provides
+    @Singleton
     fun providesTvMazeApiService(retrofit: Retrofit): TVMazeApiService {
         return retrofit.create(TVMazeApiService::class.java)
     }
-
-    @Provides
-    fun providesTvMazeRepository(api: TVMazeApiService): TVMazeRepository {
-        return TVMazeRepository(api)
-    }
-
 }

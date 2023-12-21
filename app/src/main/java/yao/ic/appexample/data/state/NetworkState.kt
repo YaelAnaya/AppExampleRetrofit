@@ -1,6 +1,4 @@
-package yao.ic.appexample.network
-
-import yao.ic.appexample.data.repository.ShowState
+package yao.ic.appexample.data.state
 
 sealed interface NetworkState {
     data class Success(val showState: ShowState) : NetworkState

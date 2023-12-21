@@ -9,11 +9,13 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import yao.ic.appexample.data.repository.ShowState
-import yao.ic.appexample.network.NetworkState
+import yao.ic.appexample.data.state.ShowState
+import yao.ic.appexample.data.model.Show
+import yao.ic.appexample.data.state.NetworkState
 import yao.ic.appexample.ui.ErrorScreen
 import yao.ic.appexample.ui.LoadingScreen
-import yao.ic.appexample.ui.screens.amphibians.ShowListScreen
+import yao.ic.appexample.ui.screens.show_detail.ShowDetailScreen
+import yao.ic.appexample.ui.screens.show_list.ShowListScreen
 
 @Composable
 fun AppNavigation(
@@ -63,8 +65,7 @@ fun AppNavigation(
                 onDetail(id)
             }
 
-            Text(text = "ShowDetail")
-            Text(text = uiState.showDetail.toString())
+            ShowDetailScreen(show = uiState.showDetail ?: Show())
         }
     }
 }
